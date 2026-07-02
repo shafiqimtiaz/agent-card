@@ -11,6 +11,11 @@ export interface CliStatus {
   pokemonName?: string;
 }
 
+export interface SkillInfo {
+  name: string;
+  source: string;
+}
+
 export interface McpTool {
   name: string;
   source: string;
@@ -30,8 +35,6 @@ export interface BurnMetrics {
   outputTokens: number;
   estimatedCostUsd: number;
   sessionCount: number;
-  avgTokensPerSession: number;
-  burnRatePerMin: number;
   tokenVelocity: number;
   envIntegrity: number;
 }
@@ -41,6 +44,7 @@ export interface ScoreResult {
   agentsScore: number;
   mcpScore: number;
   modelsScore: number;
+  skillsScore: number;
   burnScore: number;
   badges: string[];
 }

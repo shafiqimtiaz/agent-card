@@ -2,60 +2,55 @@
 
 # ◓ Pokégent
 
-[![Node.js](https://img.shields.io/badge/node-18%2B-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
-[![Ink](https://img.shields.io/badge/ink-5.0%2B-ff7700?style=flat-square)](https://github.com/vadimdemedes/ink)
 [![npm](https://img.shields.io/npm/v/pokegent?style=flat-square&logo=npm)](https://www.npmjs.com/package/pokegent)
+[![Node](https://img.shields.io/badge/node-18%2B-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
+[![Ink](https://img.shields.io/badge/ink-5.0%2B-ff7700?style=flat-square)](https://github.com/vadimdemedes/ink)
+[![License](https://img.shields.io/npm/l/pokegent?style=flat-square)](LICENSE)
 
-Terminal dashboard that shows your Pokémon AI coding ecosystem — 16 Pokémon species (CLI) detectors, TMs/HMs (MCP) discovery, Movepool usage charts, and PP burn metrics.
+Terminal dashboard + shareable HTML Trainer Card for your AI coding ecosystem.
 
-[Features](#features) • [Installation](#installation) • [Usage](#usage) • [Scoring](#scoring) • [Privacy](#privacy)
+Your coding agents become Pokémon species, MCP servers become TMs/HMs, installed skills fill your Move Tutor log, and token burn tracks as PP.
+
+[Features](#features) · [Installation](#installation) · [Usage](#usage) · [Trainer Card](#trainer-card) · [Scoring](#scoring) · [Privacy](#privacy)
 
 </div>
 
-Pokégent is a Node.js TUI that scans your local machine to give you a live picture of your Pokémon AI tooling landscape. It detects running AI processes as Pokémon, finds TMs/HMs (installed MCP servers), tallies Movepool (model) usage from shell history, and measures PP burn rates (tokens) — all locally, with zero outbound network requests.
+Pokégent scans your local machine to give you a live picture of your AI tooling landscape. It detects running AI processes, finds installed MCP servers, discovers skills, tallies model usage from shell history, and measures token burn rates — all locally with zero outbound requests.
 
-> [!NOTE]
-> Pokégent runs entirely locally. No telemetry, no outbound calls, no external services. It reads the process table, configuration directories, and log files on your machine and renders the results in your terminal.
+> **Note**  
+> Pokégent runs 100% locally. It reads the process table, configuration directories, and log files on your machine and renders the results in your terminal. No telemetry, no network calls, no data leaves your computer.
 
 ---
 
 ## Features
 
-- **16 Pokémon Species Detectors** — Scans for Mewtwo, Venusaur, Blastoise, Pikachu, Eevee, Charizard, Charmander, Gengar, Snorlax, Zubat, Jigglypuff, Ditto, Machamp, Rayquaza, Lapras, and Dragonite.
-- **TM/HM (MCP) Discovery** — Aggregates tool servers from `~/.claude`, `~/.cursor`, `~/.opencode`, and other standard config paths.
-- **Movepool (Model) Frequency Charts** — Parses terminal history and log files for model mentions, renders horizontal ASCII bars.
-- **PP (Token) Burn Analytics** — Sessions, token velocity (PP/min), input/output splits, and estimated costs.
-- **Trainer Scoring** — 0-1000 points across Pokémon, TMs/HMs, Movepool, and PP burn metrics.
-- **6 Trainer Badges** — Earn 🏆 Pokédex Master, 🦄 Legendary Trainer, 🧬 Hybrid Evolution, 🔥 Blast Burn, 💎 Elite Four, 🌐 Safari Zone Master.
+- **16 agent detectors** — Mewtwo (Claude Code), Pikachu (Gemini CLI), Ditto (OpenCode), and more. Each detected process gets a Pokémon species, sprite, and live CPU/memory stats.
+- **MCP server discovery** — Scans `~/.claude.json`, `~/.cursor/mcp.json`, `~/.opencode/config.json`, `~/.n8n/mcp.json`, and per-project MCP configs. Full arsenal displayed as TM-numbered chips.
+- **Skills inventory** — Discovers installed skills from `~/.claude/skills`, `~/.agents/skills`, and `~/.config/opencode/skills`.
+- **Model usage charts** — Parses terminal history and log files for model mentions. Renders horizontal HP-style bars with relative-to-top scaling.
+- **Token burn analytics** — Session count from `.jsonl` transcripts, token velocity (PP/min), input/output splits, estimated monthly cost.
+- **Shareable HTML Trainer Card** — Self-contained card with trainer ID, full MCP arsenal grid, team roster with sprites, PP stat tiles, badges, and one-click COPY STATS + SHARE ON X.
+- **Scoring engine** — 0–1000 points across agents, MCP, models, skills, and burn. Rarity tiers from Beginner Trainer to Mythical Champion. 7 unlockable badges.
 
 ---
 
 ## Installation
 
 ```bash
-# Run directly with npx (zero install)
+# Run directly (zero install)
 npx pokegent
 
 # Or install globally
 npm install -g pokegent
 ```
 
-Once installed, start the TUI dashboard by typing:
-
-```bash
-pokegent
-```
-
-### Build & Run from Source
+### From source
 
 ```bash
 git clone https://github.com/shafiqimtiaz/pokegent.git
 cd pokegent
 npm install
 npm run build
-npm start
-# Run with demo mock data
-node dist/index.js --demo
 ```
 
 ---
@@ -63,81 +58,140 @@ node dist/index.js --demo
 ## Usage
 
 ```bash
-# Start TUI dashboard with live local scans
+# Start the TUI dashboard (live scan)
 pokegent
 
-# Start TUI dashboard in demo mode (with realistic mock data)
+# Demo mode with realistic mock data
 pokegent --demo
 
-# Export scanned data in raw JSON format
+# Export scanned data as JSON
 pokegent --json
-```
 
-### Keyboard Shortcuts (TUI Mode)
+# Generate the shareable HTML Trainer Card
+pokegent --share
+```
 
 | Key | Action |
 |-----|--------|
-| `q` | Quit Pokégent |
-| `r` | Force an immediate scan refresh |
+| `q` | Quit |
+| `r` | Force scan refresh |
+
+---
+
+## Trainer Card
+
+The `--share` flag generates a self-contained HTML file at `~/Desktop/pokegent-card.html`.
+
+The card includes:
+
+- **Trainer identity** — Your username + ID No. derived from token burn.
+- **Score strip** — Total score, rarity rank, per-dimension breakdown.
+- **Team roster** — All detected agents with Pokémon sprites from PokeAPI, species name, CLI name, and state chip (active/resting/in box).
+- **MCP arsenal** — Full TM grid (up to 18 servers) with tool counts and descriptions on hover.
+- **Skills** — Installed skills listed as tagged chips.
+- **Movepool** — Model usage with animated HP bars, relative scaling.
+- **PP Burn tiles** — Tokens, cost, velocity, session count.
+- **Badges** — Unlocked achievements with holo shine animation.
+- **Share strip** — COPY STATS button (clipboard) + SHARE ON X (prefilled tweet).
+
+```bash
+pokegent --demo --share   # Generate card with mock data
+```
 
 ---
 
 ## Scoring
 
-Your Pokémon, TMs/HMs, Movepool, and PP burn get scored up to 1000 points:
+| Dimension | Max | How |
+|-----------|-----|-----|
+| **Agents** | 350 pts | 75 pts per running agent (cap 4) + 50 if 3+ active |
+| **MCP servers** | 200 pts | 10 pts per server (cap 15) + 1 per tool (cap 50) |
+| **Models** | 200 pts | 30 pts per model (cap 5) + 50 for 3+ providers |
+| **Skills** | 100 pts | 5 pts per skill (cap 20) |
+| **Token burn** | 250 pts | Velocity tiers + session milestones |
 
-| Dimension | Max Points | How |
-|-----------|-----------|-----|
-| **Pokémon Running** | 350 pts | 75 pts per active Pokémon (cap 4) + 50 pts bonus for 3+ simultaneous |
-| **TMs/HMs (MCP Servers)** | 200 pts | 10 pts per server (cap 15) + 1 pt per tool/move (cap 50) |
-| **Movepool Diversity** | 200 pts | 30 pts per unique model (cap 5) + 50 pts for using 3+ providers |
-| **PP Burn + Sessions** | 250 pts | Token velocity levels + session count |
+### Rarity tiers
 
-### Rarity Tiers
+| Score | Title |
+|-------|-------|
+| 900+ | 🌟 Mythical Champion — Top 1% |
+| 750+ | 💎 Shiny Legendary — Top 5% |
+| 600+ | 🥇 Pokémon Master — Top 15% |
+| 400+ | 🥈 Gym Leader — Top 35% |
+| 200+ | 🥉 Elite Trainer — Top 60% |
+| <200 | 🌱 Beginner Trainer |
 
-- **900+** — 🌟 MYTHICAL CHAMPION (Top 1%)
-- **750+** — 💎 SHINY LEGENDARY (Top 5%)
-- **600+** — 🥇 POKÉMON MASTER (Top 15%)
-- **400+** — 🥈 GYM LEADER (Top 35%)
-- **200+** — 🥉 ELITE TRAINER (Top 60%)
-- **<200** — 🌱 BEGINNER TRAINER (Rookie level)
+### Badges
+
+| Badge | Condition |
+|-------|-----------|
+| 🏆 Pokédex Master | 10+ MCP servers |
+| 🦄 Legendary Trainer | 3+ agents running |
+| 🧬 Hybrid Evolution | 3+ model providers |
+| 🔥 Blast Burn | 10K+ tokens/min velocity |
+| 💎 Elite Four | 100+ sessions |
+| 🌐 Safari Zone Master | 5+ models detected |
+| 📚 Move Tutor | 20+ skills installed |
 
 ---
 
 ## What gets scanned
 
 <details>
-<summary><strong>16 Pokémon Species Detectors</strong></summary>
+<summary><strong>Agent detectors (16)</strong></summary>
 
-| Pokémon | Platform | Process keyword | Config path |
-|---------|----------|----------------|-------------|
-| 🔮 Mewtwo | Claude Code | `claude*` | `~/.claude` |
-| 🍃 Venusaur | Codex | `codex*` | `~/.codex` |
-| 🐢 Blastoise | GitHub Copilot CLI | `copilot*` | `~/.copilot` |
-| ⚡ Pikachu | Gemini CLI | `gemini*` | `~/.gemini` |
+| Pokémon | Platform | Process | Config paths |
+|---------|----------|---------|-------------|
+| 🔮 Mewtwo | Claude Code | `claude`, `claude-code` | `~/.claude`, `~/.claude.json` |
+| 🍃 Venusaur | Codex | `codex`, `openai-codex` | `~/.codex` |
+| 🐢 Blastoise | Copilot CLI | `copilot`, `github-copilot` | `~/.copilot` |
+| ⚡ Pikachu | Gemini CLI | `gemini`, `gemini-cli` | `~/.gemini` |
 | 🦊 Eevee | Cursor | `cursor` | `~/.cursor` |
-| 🔥 Charizard | Amp | `amp*` | `~/.amp` |
-| 🦎 Charmander | Cline | — | `~/.cline` |
-| 👻 Gengar | Roo Code | `roo*` | `~/.roo` |
-| 🐻 Snorlax | Kilo Code | `kilo*` | `~/.kilo` |
+| 🔥 Charizard | Amp | `amp`, `amp-cli` | `~/.amp` |
+| 🦎 Charmander | Cline | `cline` | `~/.cline` |
+| 👻 Gengar | Roo Code | `roo`, `roo-code` | `~/.roo` |
+| 🐻 Snorlax | Kilo Code | `kilo`, `kilo-code` | `~/.kilo` |
 | 🦇 Zubat | Kiro | `kiro` | `~/.kiro` |
-| 🎈 Jigglypuff | Crush | — | `~/.crush` |
+| 🎈 Jigglypuff | Crush | `crush` | `~/.crush` |
 | 🍮 Ditto | OpenCode | `opencode` | `~/.opencode` |
-| 💪 Machamp | Factory Droid | `factory-droid` | `~/.factory-droid` |
-| 🐉 Rayquaza | Antigravity | `antigravity*` | `~/.antigravity` |
-| ⛵ Lapras | Kimi CLI | `kimi*` | `~/.kimi` |
-| 🐉 Dragonite | Qwen Code | `qwen*` | `~/.qwen` |
+| 💪 Machamp | Factory Droid | `factory`, `factory-droid` | `~/.factory-droid` |
+| 🐉 Rayquaza | Antigravity | `antigravity`, `ag-cli` | `~/.antigravity` |
+| ⛵ Lapras | Kimi CLI | `kimi`, `kimi-cli` | `~/.kimi` |
+| 🐉 Dragonite | Qwen Code | `qwen`, `qwen-code` | `~/.qwen` |
 
 </details>
 
 <details>
-<summary><strong>Scanned Models (19 patterns)</strong></summary>
+<summary><strong>MCP config paths</strong></summary>
 
-Scans for occurrences of the following model families in your local history and logs:
-- `claude-4-opus`, `claude-4-sonnet`, `claude-3.7-sonnet`, `claude-3.5-sonnet`, `claude-3-haiku`
-- `gpt-4.1`, `gpt-4o`, `gpt-4-turbo`, `o4-mini`, `o3`, `o3-mini`, `o3-pro`
-- `gemini-2.5-pro`, `gemini-2.5-flash`, `gemini-2.0-flash`
-- `deepseek-v3`, `deepseek-r1`, `qwen-3`, `llama-4`
+- `~/.claude.json` (including per-project `mcpServers`)
+- `~/.claude/mcpServers.json`
+- `~/.claude/config.json`
+- `~/.config/claude/settings.json`
+- `~/.cursor/mcp.json`
+- `~/.opencode/config.json`
+- `~/.roo/mcp.json`
+- `~/.kilo/mcp.json`
+- `~/.n8n/mcp.json`
+
+</details>
+
+<details>
+<summary><strong>Skill scan directories</strong></summary>
+
+- `~/.claude/skills`
+- `~/.agents/skills`
+- `~/.config/opencode/skills`
+
+</details>
+
+<details>
+<summary><strong>Model patterns (24+)</strong></summary>
+
+Anthropic: Claude Fable 5, Sonnet 5, Opus 4.8/4.5/4.1, Sonnet 4.5, Haiku 4.5, 4 Opus, 4 Sonnet, 3.7 Sonnet, 3.5 Sonnet, 3 Haiku.  
+OpenAI: GPT-5, GPT-4.1, GPT-4o, o4-mini, o3, o3-mini.  
+Google: Gemini 3, 2.5 Pro, 2.5 Flash.  
+Other: DeepSeek V3/R1, Qwen 3, Llama 4.
 
 </details>
 
@@ -145,4 +199,4 @@ Scans for occurrences of the following model families in your local history and 
 
 ## Privacy
 
-Pokégent runs 100% locally. No data leaves your machine. No telemetry. No analytics. No outbound network requests are made during scanning. All log file parsing, process checking, and configuration scans happen entirely on your computer.
+Pokégent runs 100% locally. No data leaves your machine. No telemetry, no analytics, no outbound network requests during scanning. All process table reads, configuration file scans, and log parsing happen entirely on your computer. The `--share` card is written as a local HTML file on your desktop — sharing it is your choice.

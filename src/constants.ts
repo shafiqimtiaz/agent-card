@@ -41,6 +41,7 @@ export interface McpScanPath {
 }
 
 export const MCP_SCAN_PATHS: McpScanPath[] = [
+  { path: '~/.claude.json',                  source: 'Claude' },
   { path: '~/.claude/mcpServers.json',       source: 'Claude' },
   { path: '~/.claude/config.json',           source: 'Claude' },
   { path: '~/.config/claude/settings.json',  source: 'Claude' },
@@ -50,22 +51,34 @@ export const MCP_SCAN_PATHS: McpScanPath[] = [
   { path: '~/.kilo/mcp.json',                source: 'Kilo Code' },
 ];
 
+export const SKILL_SCAN_DIRS = [
+  { path: '~/.claude/skills',           source: 'Claude' },
+  { path: '~/.agents/skills',           source: 'Agents' },
+  { path: '~/.config/opencode/skills',  source: 'OpenCode' },
+];
+
 export const MODEL_PATTERNS: Record<string, RegExp> = {
-  'claude-4-opus':     /claude[\-\s]?4[\-\s]?opus/i,
-  'claude-4-sonnet':   /claude[\-\s]?4[\-\s]?sonnet/i,
-  'claude-3.7-sonnet': /claude[\-\s]?3\.?7[\-\s]?sonnet/i,
-  'claude-3.5-sonnet': /claude[\-\s]?3\.?5[\-\s]?sonnet/i,
+  'claude-fable-5':    /fable[\-\s]?5/i,
+  'claude-sonnet-5':   /sonnet[\-\s]?5\b/i,
+  'claude-opus-4.8':   /opus[\-\s]?4[.\-]?8/i,
+  'claude-opus-4.5':   /opus[\-\s]?4[.\-]?5/i,
+  'claude-opus-4.1':   /opus[\-\s]?4[.\-]?1\b/i,
+  'claude-sonnet-4.5': /sonnet[\-\s]?4[.\-]?5/i,
+  'claude-haiku-4.5':  /haiku[\-\s]?4[.\-]?5/i,
+  'claude-4-opus':     /claude[\-\s]?4[\-\s]?opus|opus[\-\s]?4\b/i,
+  'claude-4-sonnet':   /claude[\-\s]?4[\-\s]?sonnet|sonnet[\-\s]?4\b/i,
+  'claude-3.7-sonnet': /claude[\-\s]?3[.\-]?7[\-\s]?sonnet/i,
+  'claude-3.5-sonnet': /claude[\-\s]?3[.\-]?5[\-\s]?sonnet/i,
   'claude-3-haiku':    /claude[\-\s]?3[\-\s]?haiku/i,
+  'gpt-5':             /gpt[\-\s]?5/i,
   'gpt-4.1':           /gpt[\-\s]?4\.?1/i,
   'gpt-4o':            /gpt[\-\s]?4o/i,
-  'gpt-4-turbo':       /gpt[\-\s]?4[\-\s]?turbo/i,
   'o4-mini':           /o4[\-\s]?mini/i,
   'o3':                /\bo3\b/i,
   'o3-mini':           /o3[\-\s]?mini/i,
-  'o3-pro':            /o3[\-\s]?pro/i,
-  'gemini-2.5-pro':    /gemini[\-\s]?2\.?5[\-\s]?pro/i,
-  'gemini-2.5-flash':  /gemini[\-\s]?2\.?5[\-\s]?flash/i,
-  'gemini-2.0-flash':  /gemini[\-\s]?2\.?0[\-\s]?flash/i,
+  'gemini-3':          /gemini[\-\s]?3/i,
+  'gemini-2.5-pro':    /gemini[\-\s]?2[.\-]?5[\-\s]?pro/i,
+  'gemini-2.5-flash':  /gemini[\-\s]?2[.\-]?5[\-\s]?flash/i,
   'deepseek-v3':       /deepseek[\-\s]?v3/i,
   'deepseek-r1':       /deepseek[\-\s]?r1/i,
   'qwen-3':            /qwen[\-\s]?3/i,
@@ -87,7 +100,6 @@ export const SCORING = {
   MAX_AGENTS: 4,
   MAX_MCP_SERVERS: 15,
   MAX_MODELS: 5,
-  MAX_TOKEN_VELOCITY: 20_000,
   AGENT_PTS: 75,
   AGENT_BONUS: 50,
   AGENT_BONUS_THRESHOLD: 3,
@@ -96,6 +108,8 @@ export const SCORING = {
   MODEL_PTS: 30,
   PROVIDER_BONUS: 50,
   PROVIDER_THRESHOLD: 3,
+  SKILL_PTS: 5,
+  MAX_SKILLS: 20,
 };
 
 export function expandHome(p: string): string {

@@ -1,11 +1,12 @@
 import { SCORING } from './constants.js';
-import type { CliStatus, McpTool, ModelUsage, BurnMetrics, ScoreResult } from './types.js';
+import type { CliStatus, McpTool, ModelUsage, BurnMetrics, SkillInfo, ScoreResult } from './types.js';
 
 export function score(
   clis: CliStatus[],
   mcp: McpTool[],
   models: ModelUsage[],
   burn: BurnMetrics,
+  skills: SkillInfo[] = [],
 ): ScoreResult {
   const running = clis.filter(c => c.state === 'RUNNING').length;
   const agentsPts = Math.min(running, SCORING.MAX_AGENTS) * SCORING.AGENT_PTS
@@ -24,15 +25,18 @@ export function score(
   const sessionPts = Math.min(Math.floor(burn.sessionCount / 10), 10) * 10;
   const burnPts = velPts + sessionPts;
 
-  const total = Math.min(agentsPts + mcpPts + modelPts + burnPts, 1000);
+  const skillsPts = Math.min(skills.length, SCORING.MAX_SKILLS) * SCORING.SKILL_PTS;
 
-  const badges = getBadges(clis, mcp, models, burn);
+  const total = Math.min(agentsPts + mcpPts + modelPts + skillsPts + burnPts, 1000);
+
+  const badges = getBadges(clis, mcp, models, burn, skills);
 
   return {
     total,
     agentsScore: agentsPts,
     mcpScore: mcpPts,
     modelsScore: modelPts,
+    skillsScore: skillsPts,
     burnScore: burnPts,
     badges,
   };
@@ -57,6 +61,7 @@ function getBadges(
   mcp: McpTool[],
   models: ModelUsage[],
   burn: BurnMetrics,
+  skills: SkillInfo[],
 ): string[] {
   const badges: string[] = [];
   const running = clis.filter(c => c.state === 'RUNNING').length;
@@ -68,27 +73,9 @@ function getBadges(
   if (burn.tokenVelocity >= 10_000) badges.push('🔥 Blast Burn');
   if (burn.sessionCount >= 100) badges.push('💎 Elite Four');
   if (models.length >= 5) badges.push('🌐 Safari Zone Master');
+  if (skills.length >= 20) badges.push('📚 Move Tutor');
 
   return badges;
-}
-
-export function agentsPct(clis: CliStatus[]): number {
-  const running = clis.filter(c => c.state === 'RUNNING').length;
-  return Math.min((running / SCORING.MAX_AGENTS) * 100, 100);
-}
-
-export function mcpPct(mcp: McpTool[]): number {
-  return Math.min((mcp.length / SCORING.MAX_MCP_SERVERS) * 100, 100);
-}
-
-export function modelsPct(models: ModelUsage[]): number {
-  return Math.min((models.length / SCORING.MAX_MODELS) * 100, 100);
-}
-
-export function burnPct(burn: BurnMetrics): number {
-  const velScore = Math.min((burn.tokenVelocity / SCORING.MAX_TOKEN_VELOCITY) * 100, 100);
-  const sessionScore = Math.min((burn.sessionCount / 100) * 100, 100);
-  return (velScore + sessionScore) / 2;
 }
 
 export function rarityLabel(score: number): string {

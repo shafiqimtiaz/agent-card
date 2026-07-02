@@ -1,4 +1,4 @@
-import type { CliStatus, McpTool, ModelUsage, BurnMetrics } from './types.js';
+import type { CliStatus, McpTool, ModelUsage, BurnMetrics, SkillInfo } from './types.js';
 import { CLI_SIGNATURES } from './constants.js';
 
 export function mockClis(): CliStatus[] {
@@ -69,6 +69,17 @@ export function mockModels(): ModelUsage[] {
   }));
 }
 
+export function mockSkills(): SkillInfo[] {
+  const names = [
+    'frontend-design', 'caveman', 'create-pr', 'review-pr', 'refactoring-ui',
+    'tdd', 'humanizer', 'prompt-optimizer', 'supabase', 'tailwindcss',
+    'git-commit', 'find-skills', 'chrome-devtools', 'code-refactoring',
+    'hindsight-docs', 'frontend-slides', 'bootstrap', 'grill-me',
+    'release-risk-analysis', 'handoff', 'ponytail', 'writing-shape',
+  ];
+  return names.map(name => ({ name, source: 'Claude' }));
+}
+
 export function mockBurn(): BurnMetrics {
   return {
     totalTokens: 2_847_392,
@@ -76,8 +87,6 @@ export function mockBurn(): BurnMetrics {
     outputTokens: 923_936,
     estimatedCostUsd: 18.47,
     sessionCount: 142,
-    avgTokensPerSession: 20_052,
-    burnRatePerMin: 0.0385,
     tokenVelocity: 14_236,
     envIntegrity: 0.85,
   };

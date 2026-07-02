@@ -43,6 +43,21 @@ export async function scanClis(): Promise<CliStatus[]> {
   return results;
 }
 
+// GUI/helper processes that must never count as a running CLI agent
+const PROC_DENYLIST = ['claude-desktop', 'crashpad', 'chrome_crashpad', '--type='];
+
+function cmdBinary(cmd: string | undefined): string {
+  if (!cmd) return '';
+  const first = cmd.trim().split(/\s+/)[0] ?? '';
+  const base = first.split('/').pop() ?? '';
+  // "node /path/to/claude" style launchers: use second arg's basename
+  if (['node', 'python', 'python3', 'sh', 'bash'].includes(base)) {
+    const second = cmd.trim().split(/\s+/)[1] ?? '';
+    return (second.split('/').pop() ?? '').toLowerCase();
+  }
+  return base.toLowerCase();
+}
+
 async function probeProcess(keywords: string[]): Promise<{
   state: CliStatus['state'];
   pid: number | null;
@@ -54,19 +69,35 @@ async function probeProcess(keywords: string[]): Promise<{
     const psList = await import('ps-list');
     const processes = await psList.default();
 
+    let pid: number | null = null;
+    let cpuPct = 0;
+    let memMb = 0;
+    let found = false;
+
     for (const proc of processes) {
-      const combined = `${proc.name} ${proc.cmd}`.toLowerCase();
-      for (const kw of keywords) {
-        if (combined.includes(kw.toLowerCase())) {
-          return {
-            state: 'RUNNING',
-            pid: proc.pid,
-            cpuPct: proc.cpu ?? 0,
-            memMb: (proc.memory ?? 0) / 1024 / 1024,
-            uptimeS: 0,
-          };
-        }
+      const cmd = `${proc.cmd ?? ''}`.toLowerCase();
+      if (PROC_DENYLIST.some(d => cmd.includes(d))) continue;
+
+      const name = proc.name.toLowerCase();
+      const binary = cmdBinary(proc.cmd);
+
+      // exact binary-name match only — substring matching produced false
+      // positives (e.g. "claude" matching claude-desktop, "roo" matching
+      // unrelated cmdline text)
+      const hit = keywords.some(kw => {
+        const k = kw.toLowerCase();
+        return name === k || binary === k;
+      });
+      if (hit) {
+        found = true;
+        if (pid === null) pid = proc.pid;
+        cpuPct += proc.cpu ?? 0;
+        memMb += (proc.memory ?? 0) / 1024 / 1024;
       }
+    }
+
+    if (found) {
+      return { state: 'RUNNING', pid, cpuPct, memMb, uptimeS: 0 };
     }
   } catch {
     // ps-list not available

@@ -1,10 +1,14 @@
 #!/usr/bin/env node
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
 import React from 'react';
 import { render } from 'ink';
 import { Command } from 'commander';
-import { scanClis, scanMcp, scanModels, scanBurn } from './scanner/index.js';
+import { generateTrainerCard } from './html.js';
+import { scanClis, scanMcp, scanModels, scanBurn, scanSkills } from './scanner/index.js';
 import { score } from './scoring.js';
-import { mockClis, mockMcp, mockModels, mockBurn } from './demo.js';
+import { mockClis, mockMcp, mockModels, mockBurn, mockSkills } from './demo.js';
 import { VERSION } from './constants.js';
 import { Dashboard } from './cli.js';
 
@@ -35,31 +39,38 @@ program
   });
 
 async function runOneShot(opts: Opts) {
-  let clis, mcp, models, burn;
+  let clis, mcp, models, burn, skills;
 
   if (opts.demo) {
     clis = mockClis();
     mcp = mockMcp();
     models = mockModels();
     burn = mockBurn();
+    skills = mockSkills();
   } else {
-    [clis, mcp, models, burn] = await Promise.all([
+    [clis, mcp, models, burn, skills] = await Promise.all([
       scanClis(),
       scanMcp(),
       scanModels(),
       scanBurn(),
+      scanSkills(),
     ]);
   }
 
-  const scoreResult = score(clis, mcp, models, burn);
+  const scoreResult = score(clis, mcp, models, burn, skills);
 
   if (opts.json) {
-    console.log(JSON.stringify({ clis, mcp, models, burn, score: scoreResult }, null, 2));
+    console.log(JSON.stringify({ clis, mcp, models, burn, skills, score: scoreResult }, null, 2));
     return;
   }
 
-  console.log('--share requires HTML card module (not included in minimal build)');
-  console.log(JSON.stringify({ clis, mcp, models, burn, score: scoreResult }, null, 2));
+  const html = generateTrainerCard(clis, mcp, models, burn, scoreResult, skills);
+  const desktop = path.join(os.homedir(), 'Desktop');
+  const outDir = fs.existsSync(desktop) ? desktop : os.homedir();
+  const outPath = path.join(outDir, 'pokegent-card.html');
+  fs.writeFileSync(outPath, html);
+  console.log(`◓ Trainer Card saved → ${outPath}`);
+  console.log('  Open it in a browser to view & share.');
 }
 
 program.parse();
