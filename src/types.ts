@@ -6,6 +6,9 @@ export interface CliStatus {
   cpuPct: number;
   memMb: number;
   uptimeS: number;
+  pokemonId?: number;
+  pokemonSlug?: string;
+  pokemonName?: string;
 }
 
 export interface McpTool {

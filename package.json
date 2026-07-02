@@ -1,10 +1,10 @@
 {
-  "name": "agentradar",
-  "version": "2.1.0",
-  "description": "Terminal dashboard that monitors your local AI tooling ecosystem — coding agents, MCP servers, LLM models, and token metrics.",
+  "name": "pokegent",
+  "version": "3.0.0",
+  "description": "Terminal dashboard that shows your Pokémon AI coding ecosystem — coding agents as Pokémon species, MCP servers as TMs/HMs, and token burn as PP.",
   "type": "module",
   "bin": {
-    "agentradar": "dist/index.js"
+    "pokegent": "dist/index.js"
   },
   "scripts": {
     "dev": "tsx src/index.ts",

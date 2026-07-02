@@ -10,21 +10,23 @@ import { Dashboard } from './cli.js';
 
 interface Opts {
   demo?: boolean;
+  share?: boolean;
   json?: boolean;
 }
 
 const program = new Command();
 
 program
-  .name('agentradar')
-  .description('Terminal dashboard that monitors your local AI tooling ecosystem')
+  .name('pokegent')
+  .description('Terminal dashboard that shows your Pokémon AI coding ecosystem')
   .version(VERSION);
 
 program
   .option('--demo', 'Run with mock data')
+  .option('--share', 'Generate HTML Trainer Card on ~/Desktop')
   .option('--json', 'Export raw data as JSON')
   .action(async (opts: Opts) => {
-    if (opts.json) {
+    if (opts.share || opts.json) {
       await runOneShot(opts);
     } else {
       const { waitUntilExit } = render(React.createElement(Dashboard, { demo: opts.demo ?? false }));
@@ -55,6 +57,9 @@ async function runOneShot(opts: Opts) {
     console.log(JSON.stringify({ clis, mcp, models, burn, score: scoreResult }, null, 2));
     return;
   }
+
+  console.log('--share requires HTML card module (not included in minimal build)');
+  console.log(JSON.stringify({ clis, mcp, models, burn, score: scoreResult }, null, 2));
 }
 
 program.parse();

@@ -23,7 +23,7 @@ export function mockClis(): CliStatus[] {
 
   return Object.entries(CLI_SIGNATURES).map(([name, sig], i) => {
     const [state, pid, cpuPct, memMb, uptimeS] = states[i % states.length];
-    return { name, icon: sig.icon, state, pid, cpuPct, memMb, uptimeS };
+    return { name, icon: sig.icon, state, pid, cpuPct, memMb, uptimeS, pokemonId: sig.pokemonId, pokemonSlug: sig.pokemonSlug, pokemonName: sig.pokemonName };
   });
 }
 

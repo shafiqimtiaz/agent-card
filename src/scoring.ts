@@ -62,12 +62,12 @@ function getBadges(
   const running = clis.filter(c => c.state === 'RUNNING').length;
   const providerCount = getProviderCount(models);
 
-  if (mcp.length >= 10) badges.push('Toolsmith');
-  if (running >= 3) badges.push('Power Orchestrator');
-  if (providerCount >= 3) badges.push('Multi-Provider');
-  if (burn.tokenVelocity >= 10_000) badges.push('High Throughput');
-  if (burn.sessionCount >= 100) badges.push('Session Veteran');
-  if (models.length >= 5) badges.push('Model Collector');
+  if (mcp.length >= 10) badges.push('🏆 Pokédex Master');
+  if (running >= 3) badges.push('🦄 Legendary Trainer');
+  if (providerCount >= 3) badges.push('🧬 Hybrid Evolution');
+  if (burn.tokenVelocity >= 10_000) badges.push('🔥 Blast Burn');
+  if (burn.sessionCount >= 100) badges.push('💎 Elite Four');
+  if (models.length >= 5) badges.push('🌐 Safari Zone Master');
 
   return badges;
 }
@@ -92,10 +92,10 @@ export function burnPct(burn: BurnMetrics): number {
 }
 
 export function rarityLabel(score: number): string {
-  if (score >= 900) return 'ELITE ARCHITECT — Top 1%';
-  if (score >= 750) return 'EXPERT SYSTEM — Top 5%';
-  if (score >= 600) return 'ADVANCED SYSTEM — Top 15%';
-  if (score >= 400) return 'SYSTEM ADMINISTRATOR — Top 35%';
-  if (score >= 200) return 'SYSTEM OPERATOR — Top 60%';
-  return 'SYSTEM INITIALIZED — everyone starts here';
+  if (score >= 900) return '🌟 MYTHICAL CHAMPION — Top 1%';
+  if (score >= 750) return '💎 SHINY LEGENDARY — Top 5%';
+  if (score >= 600) return '🥇 POKÉMON MASTER — Top 15%';
+  if (score >= 400) return '🥈 GYM LEADER — Top 35%';
+  if (score >= 200) return '🥉 ELITE TRAINER — Top 60%';
+  return '🌱 BEGINNER TRAINER — everyone starts here';
 }

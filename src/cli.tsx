@@ -82,7 +82,7 @@ export function Dashboard({ demo }: DashboardProps) {
         </Box>
         <Box marginTop={2} marginBottom={2} flexDirection="column" gap={1}>
           <Text bold color="yellow">
-            ◓ Scanning AI coding ecosystem...
+            ◓ Scanning Pokémon coding ecosystem...
           </Text>
           <Text color="gray">
             (First live scan takes a few seconds to recursively search local logs & history)
@@ -123,7 +123,7 @@ export function Dashboard({ demo }: DashboardProps) {
           {/* Agents */}
           <Box flexDirection="column" marginBottom={1}>
             <Text bold color="blue">
-              AGENTS ({running.length} active)
+              🎒 POKÉMON TEAM ({running.length} running)
             </Text>
             {clisDetected.slice(0, 8).map((c, i) => (
               <Box key={i}>
@@ -147,7 +147,7 @@ export function Dashboard({ demo }: DashboardProps) {
           {/* MCP */}
           <Box flexDirection="column">
             <Text bold color="yellow">
-              MCP SERVERS · Skills ({mcp.length} servers, {totalTools} skills)
+              🎒 TMs & HMs · MCP Servers ({mcp.length} servers, {totalTools} tools)
             </Text>
             {[...mcp].sort((a, b) => b.toolCount - a.toolCount).slice(0, 6).map((t, i) => (
               <Box key={i}>
@@ -164,7 +164,7 @@ export function Dashboard({ demo }: DashboardProps) {
           {/* Models */}
           <Box flexDirection="column" marginBottom={1}>
             <Text bold color="magenta">
-              AI MODELS
+              📊 MOVEPOOL · Model Usage
             </Text>
             {models.slice(0, 6).map((m, i) => {
               const filled = Math.floor(m.percentage / 100 * 10);
@@ -183,13 +183,13 @@ export function Dashboard({ demo }: DashboardProps) {
           {burn && (
             <Box flexDirection="column">
               <Text bold color="red">
-                SYSTEM METRICS
+                🔋 PP BURN · Token Usage
               </Text>
-              <Text>  Tokens        {burn.totalTokens >= 1_000_000 ? `${(burn.totalTokens / 1_000_000).toFixed(1)}M` : `${(burn.totalTokens / 1_000).toFixed(1)}K`}</Text>
+              <Text>  Tokens (PP)   {burn.totalTokens >= 1_000_000 ? `${(burn.totalTokens / 1_000_000).toFixed(1)}M` : `${(burn.totalTokens / 1_000).toFixed(1)}K`}</Text>
               <Text>  Cost ($)      ${burn.estimatedCostUsd.toFixed(2)}/mo</Text>
               <Text>  Token Rate    {burn.tokenVelocity >= 1_000 ? `${(burn.tokenVelocity / 1_000).toFixed(1)}K` : burn.tokenVelocity}/min</Text>
               <Text>  Sessions      {burn.sessionCount}</Text>
-              <Text>  Integrity     {burn.envIntegrity >= 0.8 ? '🟢' : burn.envIntegrity >= 0.5 ? '🟡' : '🔴'} {Math.round(burn.envIntegrity * 100)}%</Text>
+              <Text>  Env Health    {burn.envIntegrity >= 0.8 ? '🟢' : burn.envIntegrity >= 0.5 ? '🟡' : '🔴'} {Math.round(burn.envIntegrity * 100)}%</Text>
             </Box>
           )}
         </Box>
@@ -198,7 +198,7 @@ export function Dashboard({ demo }: DashboardProps) {
       {/* Badges */}
       {scoreResult && scoreResult.badges.length > 0 && (
         <Box marginTop={1} flexDirection="column">
-          <Text bold color="yellow">BADGES</Text>
+          <Text bold color="yellow">🏅 BADGES</Text>
           <Box flexWrap="wrap" gap={1}>
             {scoreResult.badges.map((b, i) => (
               <Text key={i} color="yellow">{b}</Text>
