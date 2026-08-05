@@ -1,6 +1,6 @@
 {
   "name": "pokegent",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Terminal dashboard that shows your Pokémon AI coding ecosystem — coding agents as Pokémon species, MCP servers as TMs/HMs, and token burn as PP.",
   "type": "module",
   "bin": {
