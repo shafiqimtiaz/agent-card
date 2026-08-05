@@ -173,9 +173,9 @@ export function Dashboard({ demo }: DashboardProps) {
       </Box>
 
       {/* Grid */}
-      <Box flexDirection="row" gap={1}>
+      <Box flexDirection="row">
         {/* Left column */}
-        <Box flexDirection="column" width="50%">
+        <Box flexDirection="column" width="50%" paddingRight={1}>
           <Panel title={`🎒 POKÉMON TEAM  ·  ${running.length} active / ${clisDetected.length} caught`} color="blue">
             {clisDetected.slice(0, 8).map((c, i) => (
               <Box key={i}>
@@ -209,7 +209,7 @@ export function Dashboard({ demo }: DashboardProps) {
         </Box>
 
         {/* Right column */}
-        <Box flexDirection="column" width="50%">
+        <Box flexDirection="column" width="50%" paddingLeft={1}>
           <Panel title="📊 MOVEPOOL · Model Usage" color="magenta">
             {models.slice(0, 6).map((m, i, arr) => {
               const maxPct = Math.max(...arr.map(x => x.percentage), 1);
