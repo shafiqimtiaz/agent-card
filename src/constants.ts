@@ -4,7 +4,7 @@ import os from 'os';
 const home = os.homedir();
 
 export const APP_TITLE = '◓ Pokégent';
-export const VERSION = '3.0.0';
+export const VERSION = '3.0.2';
 export const REFRESH_INTERVAL = 2000;
 // models/burn scans read thousands of files; refresh them far less often than
 // the cheap process/config scans so the TUI stays responsive
