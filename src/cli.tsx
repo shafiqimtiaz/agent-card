@@ -179,7 +179,7 @@ export function Dashboard({ demo }: DashboardProps) {
           <Panel title={`🎒 POKÉMON TEAM  ·  ${running.length} active / ${clisDetected.length} caught`} color="blue">
             {clisDetected.slice(0, 8).map((c, i) => (
               <Box key={i}>
-                <Box width={3} flexShrink={0}><Text>{c.icon}</Text></Box>
+                <Box flexShrink={0}><Text>{c.icon} </Text></Box>
                 <Box width={13} flexShrink={0}><Text bold wrap="truncate">{c.pokemonName ?? c.name}</Text></Box>
                 <Box flexGrow={1}><Text color="gray" wrap="truncate">{c.name}</Text></Box>
                 <Box flexShrink={0} justifyContent="flex-end">
