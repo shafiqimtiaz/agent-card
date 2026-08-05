@@ -1,20 +1,52 @@
 import fs from 'fs/promises';
-import path from 'path';
-import { glob } from 'glob';
+import { walkFiles, runPool } from './walk.js';
 import { MODEL_PATTERNS, SCAN_DIRS, LOG_EXTENSIONS, SHELL_HISTORIES, expandHome } from '../constants.js';
 import type { ModelUsage } from '../types.js';
+
+// Cap per-file reads: huge files (Copilot embeddings, browser caches, logs)
+// are reference data, not usage evidence — reading them costs seconds per scan.
+const MAX_FILE_BYTES = 2 * 1024 * 1024;
+
+// Compile once at module load, not per file per pattern (25 × 8000 compiles).
+// The combined regex finds every position where ANY model name occurs; each
+// match is then classified with anchored per-model tests, so a file is
+// scanned once instead of 25 times.
+const COMBINED_RE = new RegExp(Object.values(MODEL_PATTERNS).map(p => p.source).join('|'), 'gi');
+// '^' + source: “does this pattern match starting exactly here?” — equivalent
+// to counting whole-string occurrences, with zero false positives.
+const ANCHORED_RES = Object.entries(MODEL_PATTERNS).map(
+  ([name, p]) => [name, new RegExp(`^(?:${p.source})`, 'i')] as const,
+);
+// Match text is capped at 64 chars for classification — plenty for the
+// longest pattern (~30 chars).
+const CLASSIFY_WINDOW = 64;
 
 export async function scanModels(): Promise<ModelUsage[]> {
   const hits: Record<string, number> = {};
 
+  // Collect candidate files first (skips caches/builds, caps file size), then
+  // read + regex them concurrently so a scan is sub-second, not 8 seconds.
+  const files: string[] = [];
   for (const dir of SCAN_DIRS.models) {
-    const expanded = expandHome(dir);
     try {
-      await scanDirRecursive(expanded, hits, 4);
+      files.push(...(await walkFiles(expandHome(dir), {
+        maxDepth: 4,
+        maxFileSizeBytes: MAX_FILE_BYTES,
+        extensions: LOG_EXTENSIONS,
+      })));
     } catch {
       // dir not found
     }
   }
+
+  await runPool(files, 24, async file => {
+    try {
+      const content = await fs.readFile(file, 'utf-8');
+      countMatches(content, hits);
+    } catch {
+      // skip unreadable files
+    }
+  });
 
   // Scan shell history
   for (const hist of SHELL_HISTORIES) {
@@ -44,32 +76,16 @@ export async function scanModels(): Promise<ModelUsage[]> {
   return usages;
 }
 
-async function scanDirRecursive(dir: string, hits: Record<string, number>, maxDepth: number): Promise<void> {
-  try {
-    const entries = await fs.readdir(dir, { withFileTypes: true });
-    for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name);
-      if (entry.isDirectory() && maxDepth > 0) {
-        await scanDirRecursive(fullPath, hits, maxDepth - 1);
-      } else if (entry.isFile() && LOG_EXTENSIONS.has(path.extname(entry.name).toLowerCase())) {
-        try {
-          const content = await fs.readFile(fullPath, 'utf-8');
-          countMatches(content, hits);
-        } catch {
-          // skip unreadable files
-        }
-      }
-    }
-  } catch {
-    // dir not accessible
-  }
-}
-
 function countMatches(content: string, hits: Record<string, number>): void {
-  for (const [model, pattern] of Object.entries(MODEL_PATTERNS)) {
-    const matches = content.match(new RegExp(pattern.source, 'gi'));
-    if (matches) {
-      hits[model] = (hits[model] ?? 0) + matches.length;
+  COMBINED_RE.lastIndex = 0;
+  let m: RegExpExecArray | null;
+  while ((m = COMBINED_RE.exec(content)) !== null) {
+    const window = content.slice(m.index, m.index + CLASSIFY_WINDOW);
+    for (const [model, re] of ANCHORED_RES) {
+      re.lastIndex = 0;
+      if (re.test(window)) {
+        hits[model] = (hits[model] ?? 0) + 1;
+      }
     }
   }
 }

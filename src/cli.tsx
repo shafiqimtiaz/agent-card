@@ -3,7 +3,7 @@ import { Box, Text, useApp, useInput } from 'ink';
 import { scanClis, scanMcp, scanModels, scanBurn, scanSkills } from './scanner/index.js';
 import { score, rarityLabel } from './scoring.js';
 import { mockClis, mockMcp, mockModels, mockBurn, mockSkills } from './demo.js';
-import { APP_TITLE, REFRESH_INTERVAL, VERSION } from './constants.js';
+import { APP_TITLE, REFRESH_INTERVAL, EXPENSIVE_REFRESH_MS, VERSION } from './constants.js';
 import type { CliStatus, McpTool, ModelUsage, BurnMetrics, SkillInfo, ScoreResult } from './types.js';
 
 const BALL_FRAMES = ['◐', '◓', '◑', '◒'];
@@ -17,13 +17,14 @@ interface DashboardProps {
   demo: boolean;
 }
 
-function usePokeball(): string {
+function usePokeball(active: boolean): string {
   const [frame, setFrame] = useState(0);
   useEffect(() => {
+    if (!active) return;
     const id = setInterval(() => setFrame(f => (f + 1) % BALL_FRAMES.length), 200);
     return () => clearInterval(id);
-  }, []);
-  return BALL_FRAMES[frame];
+  }, [active]);
+  return active ? BALL_FRAMES[frame] : '●';
 }
 
 function hpColor(pct: number): string {
@@ -48,13 +49,19 @@ export function Dashboard({ demo }: DashboardProps) {
   const [skills, setSkills] = useState<SkillInfo[]>([]);
   const [scoreResult, setScoreResult] = useState<ScoreResult | null>(null);
   const [scanTime, setScanTime] = useState(0);
+  const [scanning, setScanning] = useState(true);
   const [lastMessage, setLastMessage] = useState('');
   const scanningRef = useRef(false);
-  const ball = usePokeball();
+  const lastExpensiveRef = useRef(0);
+  // latest models/burn, kept in refs so cheap-only ticks can reuse them
+  const modelsRef = useRef<ModelUsage[]>([]);
+  const burnRef = useRef<BurnMetrics | null>(null);
+  const ball = usePokeball(scanning);
 
   const runScan = useCallback(async () => {
     if (scanningRef.current) return;
     scanningRef.current = true;
+    setScanning(true);
     const t0 = Date.now();
     try {
       let c: CliStatus[], m: McpTool[], mo: ModelUsage[], b: BurnMetrics, sk: SkillInfo[];
@@ -65,13 +72,25 @@ export function Dashboard({ demo }: DashboardProps) {
         b = mockBurn();
         sk = mockSkills();
       } else {
-        [c, m, mo, b, sk] = await Promise.all([
-          scanClis(),
-          scanMcp(),
-          scanModels(),
-          scanBurn(),
-          scanSkills(),
-        ]);
+        // Cheap scans (process table, configs, skills) run every tick.
+        // The expensive file-tree scans (models, burn) only run every
+        // EXPENSIVE_REFRESH_MS — otherwise the TUI grinds through
+        // thousands of log files every 2 seconds.
+        const now = Date.now();
+        const expensiveDue = now - lastExpensiveRef.current >= EXPENSIVE_REFRESH_MS;
+        [c, m, sk] = await Promise.all([scanClis(), scanMcp(), scanSkills()]);
+        // Re-run expensive scans if they've never succeeded yet (first tick
+        // or a previous failure) — score() needs a real BurnMetrics.
+        const prevBurn = burnRef.current;
+        if (expensiveDue || prevBurn === null) {
+          lastExpensiveRef.current = now;
+          [mo, b] = await Promise.all([scanModels(), scanBurn()]);
+          modelsRef.current = mo;
+          burnRef.current = b;
+        } else {
+          mo = modelsRef.current;
+          b = prevBurn;
+        }
       }
       const s = score(c, m, mo, b, sk);
       setClis(c);
@@ -84,6 +103,7 @@ export function Dashboard({ demo }: DashboardProps) {
     } catch (err) {
       setLastMessage(`Scan error: ${err}`);
     } finally {
+      setScanning(false);
       scanningRef.current = false;
     }
   }, [demo]);
@@ -119,7 +139,7 @@ export function Dashboard({ demo }: DashboardProps) {
             {ball} Scanning Pokémon coding ecosystem...
           </Text>
           <Text color="gray">
-            (First live scan takes a few seconds to recursively search local logs & history)
+            (Gathering process, config & log data…)
           </Text>
         </Box>
         <Box paddingX={1} justifyContent="space-between">
@@ -176,7 +196,7 @@ export function Dashboard({ demo }: DashboardProps) {
             {clisDetected.length > 8 && <Text color="gray">  … +{clisDetected.length - 8} more</Text>}
           </Panel>
 
-          <Panel title={`💿 TMs & HMs  ·  ${mcp.length} servers / ${totalTools} tools`} color="yellow">
+          <Panel title={`💿 TMs & HMs  ·  ${mcp.length} servers${totalTools > 0 ? ` / ${totalTools} tools` : ''}`} color="yellow">
             {[...mcp].sort((a, b) => b.toolCount - a.toolCount).slice(0, 6).map((t, i) => (
               <Box key={i}>
                 <Box width={5} flexShrink={0}><Text color="redBright">TM{String(i + 1).padStart(2, '0')}</Text></Box>
@@ -213,12 +233,7 @@ export function Dashboard({ demo }: DashboardProps) {
           {skills.length > 0 && (
             <Panel title="📚 SKILLS" color="green">
               <Text color="gray">{skills.length} skills loaded</Text>
-              <Box flexWrap="wrap" columnGap={1}>
-                {skills.slice(0, 8).map((sk, i) => (
-                  <Text key={i}>{i > 0 ? ', ' : ''}{sk.name}</Text>
-                ))}
-                {skills.length > 8 && <Text color="gray"> … +{skills.length - 8}</Text>}
-              </Box>
+              <Text wrap="wrap">{skills.slice(0, 8).map(sk => sk.name).join(', ')}{skills.length > 8 && ` … +${skills.length - 8}`}</Text>
             </Panel>
           )}
 
@@ -255,13 +270,10 @@ export function Dashboard({ demo }: DashboardProps) {
 
       {/* Status bar */}
       <Box paddingX={1} justifyContent="space-between">
-        <Text color="gray">
+        <Text color="gray" wrap="truncate">
           <Text color={demo ? 'yellow' : 'green'}>{ball} {demo ? 'DEMO' : 'LIVE'}</Text> │ Scan: {scanTime.toFixed(1)}s │ {new Date().toLocaleTimeString()}
-          {scoreResult && (
-            <Text color="gray"> │ A{scoreResult.agentsScore} · T{scoreResult.mcpScore} · M{scoreResult.modelsScore} · S{scoreResult.skillsScore} · P{scoreResult.burnScore}</Text>
-          )}
         </Text>
-        <Text color="gray">q quit │ r refresh │ --share card</Text>
+        <Box flexShrink={0}><Text color="gray">q quit │ r refresh │ --share card</Text></Box>
       </Box>
 
       {/* Message */}

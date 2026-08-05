@@ -6,6 +6,10 @@ const home = os.homedir();
 export const APP_TITLE = '◓ Pokégent';
 export const VERSION = '3.0.0';
 export const REFRESH_INTERVAL = 2000;
+// models/burn scans read thousands of files; refresh them far less often than
+// the cheap process/config scans so the TUI stays responsive
+const MINUTE_MS = 60_000;
+export const EXPENSIVE_REFRESH_MS = MINUTE_MS;
 
 export interface CliSignature {
   process: string[];
